@@ -26,15 +26,12 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
     console.log("uploadFile to", url);
 
     // Get the presigned URL
-    // const response = await axios({
-    //   method: "GET",
-    //   url,
-    //   params: {
-    //     name: encodeURIComponent(file.name),
-    //   },
-    // });
+    // const response = await fetch(
+    //   `${url}?name=${encodeURIComponent(file.name)}`
+    // );
+    // const presignedUrl = await response.json();
     // console.log("File to upload: ", file.name);
-    // console.log("Uploading to: ", response.data);
+    // console.log("Uploading to: ", presignedUrl);
     // const result = await fetch(response.data, {
     //   method: "PUT",
     //   body: file,
