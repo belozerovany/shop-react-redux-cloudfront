@@ -1,14 +1,14 @@
-import axios, { AxiosError } from "axios";
 import React from "react";
 import { useQuery, useQueryClient, useMutation } from "react-query";
 import API_PATHS from "~/constants/apiPaths";
 import { OrderStatus } from "~/constants/order";
 import { Order } from "~/models/Order";
+import { fetchJson, getAuthHeaders } from "~/utils/http";
 
 export function useOrders() {
-  return useQuery<Order[], AxiosError>("orders", async () => {
-    const res = await axios.get<Order[]>(`${API_PATHS.order}/order`);
-    return res.data;
+  return useQuery<Order[], Error>("orders", async () => {
+    const res = await fetchJson<Order[]>(`${API_PATHS.order}/order`);
+    return res;
   });
 }
 
@@ -22,24 +22,35 @@ export function useInvalidateOrders() {
 
 export function useUpdateOrderStatus() {
   return useMutation(
-    (values: { id: string; status: OrderStatus; comment: string }) => {
+    async (values: { id: string; status: OrderStatus; comment: string }) => {
       const { id, ...data } = values;
-      return axios.put(`${API_PATHS.order}/order/${id}/status`, data, {
-        headers: {
-          Authorization: `Basic ${localStorage.getItem("authorization_token")}`,
-        },
-      });
+      const res = await fetchJson<void>(
+        `${API_PATHS.order}/order/${id}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify(data),
+        }
+      );
+      return res;
     }
   );
 }
 
 export function useSubmitOrder() {
-  return useMutation((values: Omit<Order, "id">) => {
-    return axios.put<Omit<Order, "id">>(`${API_PATHS.order}/order`, values, {
+  return useMutation(async (values: Omit<Order, "id">) => {
+    const res = await fetchJson<void>(`${API_PATHS.order}/order`, {
+      method: "PUT",
       headers: {
-        Authorization: `Basic ${localStorage.getItem("authorization_token")}`,
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
+      body: JSON.stringify(values),
     });
+    return res;
   });
 }
 
@@ -53,11 +64,11 @@ export function useInvalidateOrder() {
 }
 
 export function useDeleteOrder() {
-  return useMutation((id: string) =>
-    axios.delete(`${API_PATHS.order}/order/${id}`, {
-      headers: {
-        Authorization: `Basic ${localStorage.getItem("authorization_token")}`,
-      },
-    })
-  );
+  return useMutation(async (id: string) => {
+    const res = await fetchJson<void>(`${API_PATHS.order}/order/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    return res;
+  });
 }
